@@ -42,10 +42,11 @@ keep_alive_platform_t* new_platform(void)
     return (keep_alive_platform_t*)malloc(sizeof(keep_alive_platform_t));
 }
 
-void platform_ctr(keep_alive_platform_t* self, uint16_t timeout_ms, tx_cbf tx_cb)
+void platform_ctr(keep_alive_platform_t* self, uint16_t timeout_ms, tx_cbf tx_cb, fault_cbf fault_cb)
 {
     self -> timeout = timeout_ms;
     self -> tx_cb = tx_cb;
+    self -> fault_cb = fault_cb;
     self -> ticker = 0;
     self -> old_rx = 0;
     self -> old_tx = 0;
@@ -76,8 +77,7 @@ void platform_systick(keep_alive_platform_t* self)
     if (self -> bresponse_ticker)
     {       
        if (self -> response_ticker++ > self -> response_timeout)
-       {
-           self -> response_ticker = 0;
+       {           
            if (code == KEEP_ALIVE_CHECK)
            {
                code = KEEP_ALIVE_CHECK_RETRY;
@@ -87,14 +87,18 @@ void platform_systick(keep_alive_platform_t* self)
            {
                code = KEEP_ALIVE_LAST_CHECK;
            }
+
            else
            {
                if (self -> fault_cb != NULL)
                {
                    self -> fault_cb(self);
+                   code = KEEP_ALIVE_CHECK;
+                   checker_ctr(self -> kac);
                }
            }
-           
+
+           self -> response_ticker = 0;                    
        }
     }
 
@@ -122,10 +126,11 @@ void add_buf_and_parse(keep_alive_platform_t* self, const uint8_t* buf)
     }
 
     //To Do :  move systick func
+
     else
     {
         if (code == KEEP_ALIVE_CHECK)
-		{
+        {
 			code = KEEP_ALIVE_CHECK_RETRY;
 		}
 		
