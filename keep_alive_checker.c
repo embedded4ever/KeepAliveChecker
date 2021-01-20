@@ -113,4 +113,3 @@ int parse(keep_alive_checker_t* self, const keep_alive_checker_t* fakeself)
 
 */
 }
-

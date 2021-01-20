@@ -6,12 +6,14 @@
 #include "stdint.h"
 
 typedef void (*tx_cbf)(const uint8_t* send_buf, uint8_t size);
+typedef void (*fault_cbf)(void* self);
+
 
 struct keep_alive_platform_t;
 
 struct keep_alive_platform_t* new_platform(void);
 
-void platform_ctr(struct keep_alive_platform_t* self, uint16_t timeout_ms, tx_cbf tx_cb);
+void platform_ctr(struct keep_alive_platform_t* self, uint16_t timeout_ms, tx_cbf tx_cb, fault_cbf fault_cb);
 
 void platform_dtr(struct keep_alive_platform_t* self);
 
