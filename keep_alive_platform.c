@@ -5,6 +5,7 @@
 #include "string.h"
 #include "keep_alive_checker.h"
 #include "stdio.h"
+#include "stdbool.h"
 
 typedef void (*tx_cbf)(const uint8_t* send_buf, uint8_t size);
 typedef void (*fault_cbf)(void* self);
@@ -23,6 +24,9 @@ e_opcode code = KEEP_ALIVE_CHECK;
 typedef struct 
 {   
     uint16_t ticker;
+    uint16_t response_ticker;
+    bool bresponse_ticker;
+    uint16_t response_timeout;
     uint16_t timeout;
     uint32_t old_rx;
     uint32_t old_tx;
@@ -45,7 +49,8 @@ void platform_ctr(keep_alive_platform_t* self, uint16_t timeout_ms, tx_cbf tx_cb
     self -> ticker = 0;
     self -> old_rx = 0;
     self -> old_tx = 0;
-
+    self -> response_ticker = 0;
+    self -> response_timeout = 2000;
     memset(self -> buffer, 0, sizeof(self -> buffer));
 
     self -> kac = new_checker();
@@ -68,6 +73,15 @@ void platform_systick(keep_alive_platform_t* self)
 {
     self -> ticker++;
 
+    if (self -> bresponse_ticker)
+    {       
+       if (self -> response_ticker++ > self -> response_timeout)
+       {
+           self -> response_ticker = 0;
+           //To do : Send again.
+       }
+    }
+
     if (is_timeout_overflow(self)) 
     {
         uint8_t *buffer = checker_data_packed(self -> kac, code);
@@ -76,6 +90,7 @@ void platform_systick(keep_alive_platform_t* self)
 
         self -> ticker = 0;
         
+        self -> bresponse_ticker = true;
         //checker_inc_tx(self -> kac);     
     }    
 }
@@ -90,6 +105,7 @@ void add_buf_and_parse(keep_alive_platform_t* self, const uint8_t* buf)
         checker_inc_tx(self -> kac);
     }
 
+    //To Do :  move systick func
     else
     {
         if (code == KEEP_ALIVE_CHECK)
