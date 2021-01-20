@@ -1,3 +1,5 @@
+//vvolkanunal@gmail.com wrote this file.
+
 #ifndef KEEP_ALIVE_PLATFORM_H_INCLUDED
 #define KEEP_ALIVE_PLATFORM_H_INCLUDED
 
