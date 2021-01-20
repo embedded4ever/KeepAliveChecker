@@ -73,7 +73,7 @@ void platform_systick(keep_alive_platform_t* self)
 
         self -> ticker = 0;
         
-        checker_inc_tx(self -> kac);     
+        //checker_inc_tx(self -> kac);     
     }    
 }
 
