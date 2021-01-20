@@ -78,7 +78,23 @@ void platform_systick(keep_alive_platform_t* self)
        if (self -> response_ticker++ > self -> response_timeout)
        {
            self -> response_ticker = 0;
-           //To do : Send again.
+           if (code == KEEP_ALIVE_CHECK)
+           {
+               code = KEEP_ALIVE_CHECK_RETRY;
+           }
+
+           else if (code == KEEP_ALIVE_CHECK_RETRY)
+           {
+               code = KEEP_ALIVE_LAST_CHECK;
+           }
+           else
+           {
+               if (self -> fault_cb != NULL)
+               {
+                   self -> fault_cb(self);
+               }
+           }
+           
        }
     }
 
