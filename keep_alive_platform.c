@@ -10,7 +10,6 @@
 typedef void (*tx_cbf)(const uint8_t* send_buf, uint8_t size);
 typedef void (*fault_cbf)(void* self);
 
-
 typedef enum e_opcode
 {
     KEEP_ALIVE_CHECK = 0x02,
@@ -95,10 +94,12 @@ void platform_systick(keep_alive_platform_t* self)
                    self -> fault_cb(self);
                    code = KEEP_ALIVE_CHECK;
                    checker_ctr(self -> kac);
+                   self -> ticker = 0;
                }
            }
-
-           self -> response_ticker = 0;                    
+                     
+           self -> bresponse_ticker = false;
+           self -> response_ticker = 0;
        }
     }
 
@@ -112,6 +113,7 @@ void platform_systick(keep_alive_platform_t* self)
         
         self -> bresponse_ticker = true;
         //checker_inc_tx(self -> kac);     
+        
     }    
 }
 
@@ -134,7 +136,7 @@ void add_buf_and_parse(keep_alive_platform_t* self, const uint8_t* buf)
 			code = KEEP_ALIVE_CHECK_RETRY;
 		}
 		
-		else if (code == KEEP_ALIVE_CHECK_RETRY)
+        else if (code == KEEP_ALIVE_CHECK_RETRY)
 		{
 			code = KEEP_ALIVE_LAST_CHECK;
 		}
