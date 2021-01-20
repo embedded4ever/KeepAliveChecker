@@ -7,6 +7,8 @@
 #include "stdio.h"
 
 typedef void (*tx_cbf)(const uint8_t* send_buf, uint8_t size);
+typedef void (*fault_cbf)(void* self);
+
 
 typedef enum e_opcode
 {
@@ -25,6 +27,7 @@ typedef struct
     uint32_t old_rx;
     uint32_t old_tx;
     tx_cbf tx_cb;
+    fault_cbf fault_cb;
     uint8_t buffer[11];
     struct keep_alive_checker_t* kac;
 
@@ -89,7 +92,23 @@ void add_buf_and_parse(keep_alive_platform_t* self, const uint8_t* buf)
 
     else
     {
-        code = KEEP_ALIVE_CHECK_RETRY;
+        if (code == KEEP_ALIVE_CHECK)
+		{
+			code = KEEP_ALIVE_CHECK_RETRY;
+		}
+		
+		else if (code == KEEP_ALIVE_CHECK_RETRY)
+		{
+			code = KEEP_ALIVE_LAST_CHECK;
+		}
+		
+		else 
+		{
+			if (self -> fault_cb != NULL)
+			{
+				self -> fault_cb(self);
+			}
+		}
     }    
 }
 
@@ -107,7 +126,3 @@ void change_frequency_checker(keep_alive_platform_t* self, uint16_t timeout)
 {
     self -> timeout = timeout;
 }
-
-
-
-
