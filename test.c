@@ -12,11 +12,16 @@ static void uart_tx_platform_specific(const uint8_t* data, uint8_t size)
     }	
 }
 
+void fault_handle(void* self)
+{
+    printf("fault cb");
+}
+
 int main()
 {
     struct keep_alive_platform_t* kap = new_platform();
 
-    platform_ctr(kap, 5000, uart_tx_platform_specific);
+    platform_ctr(kap, 5000, uart_tx_platform_specific, fault_handle);
 
     static uint8_t buf[11] = {
         0x01, //start of frame
@@ -43,7 +48,7 @@ int main()
 
     uint32_t ct = get_tx(kap);
     printf("\r\n ct = %d", ct);
-    
+
     platform_dtr(kap);
     free(kap);
 
