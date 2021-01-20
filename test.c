@@ -43,6 +43,8 @@ int main()
 
     uint32_t ct = get_tx(kap);
     printf("\r\n ct = %d", ct);
+    
+    platform_dtr(kap);
     free(kap);
 
 }
