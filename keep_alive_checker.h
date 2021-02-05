@@ -5,6 +5,10 @@
 
 #include "stdint.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct keep_alive_checker_t;
 
 struct keep_alive_checker_t* new_checker(void);
@@ -25,5 +29,8 @@ uint32_t checker_get_rx(const struct keep_alive_checker_t* self);
 
 int parse(struct keep_alive_checker_t* self, const struct keep_alive_checker_t* fakeself);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif
