@@ -3,6 +3,10 @@
 #include "stdio.h"
 #include "string.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum e_opcode
 {
     KEEP_ALIVE_CHECK = 0x02,
@@ -113,3 +117,7 @@ int parse(keep_alive_checker_t* self, const keep_alive_checker_t* fakeself)
 
 */
 }
+
+#ifdef __cplusplus
+}
+#endif
