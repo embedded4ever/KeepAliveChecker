@@ -5,9 +5,12 @@
 
 #include "stdint.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef void (*tx_cbf)(const uint8_t* send_buf, uint8_t size);
 typedef void (*fault_cbf)(void* self);
-
 
 struct keep_alive_platform_t;
 
@@ -28,5 +31,10 @@ uint32_t get_rx(const struct keep_alive_platform_t* self);
 uint32_t get_tx(const struct keep_alive_platform_t* self);
 
 void change_frequency_checker(struct keep_alive_platform_t* self, uint16_t timeout);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
