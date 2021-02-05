@@ -7,6 +7,10 @@
 #include "stdio.h"
 #include "stdbool.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef void (*tx_cbf)(const uint8_t* send_buf, uint8_t size);
 typedef void (*fault_cbf)(void* self);
 
@@ -31,6 +35,7 @@ typedef struct
     uint32_t old_tx;
     tx_cbf tx_cb;
     fault_cbf fault_cb;
+    
     uint8_t buffer[11];
     struct keep_alive_checker_t* kac;
 
@@ -50,7 +55,8 @@ void platform_ctr(keep_alive_platform_t* self, uint16_t timeout_ms, tx_cbf tx_cb
     self -> old_rx = 0;
     self -> old_tx = 0;
     self -> response_ticker = 0;
-    self -> response_timeout = 2000;
+    self -> response_timeout = 3;
+    self -> bresponse_ticker = false;
     memset(self -> buffer, 0, sizeof(self -> buffer));
 
     self -> kac = new_checker();
@@ -97,7 +103,7 @@ void platform_systick(keep_alive_platform_t* self)
                    self -> ticker = 0;
                }
            }
-                     
+
            self -> bresponse_ticker = false;
            self -> response_ticker = 0;
        }
@@ -107,13 +113,13 @@ void platform_systick(keep_alive_platform_t* self)
     {
         uint8_t *buffer = checker_data_packed(self -> kac, code);
                
-        self -> tx_cb (buffer, 12);
+        self -> tx_cb (buffer, 11);
 
         self -> ticker = 0;
         
         self -> bresponse_ticker = true;
-        //checker_inc_tx(self -> kac);     
-        
+
+        //checker_inc_tx(self -> kac);            
     }    
 }
 
@@ -133,21 +139,21 @@ void add_buf_and_parse(keep_alive_platform_t* self, const uint8_t* buf)
     {
         if (code == KEEP_ALIVE_CHECK)
         {
-			code = KEEP_ALIVE_CHECK_RETRY;
-		}
-		
+          code = KEEP_ALIVE_CHECK_RETRY;
+        } 
+    
         else if (code == KEEP_ALIVE_CHECK_RETRY)
-		{
-			code = KEEP_ALIVE_LAST_CHECK;
-		}
-		
-		else 
-		{
-			if (self -> fault_cb != NULL)
-			{
-				self -> fault_cb(self);
-			}
-		}
+        {
+          code = KEEP_ALIVE_LAST_CHECK;
+        }
+    
+    else 
+    {
+      if (self -> fault_cb != NULL)
+      {
+        self -> fault_cb(self);
+      }
+    }
     }    
 }
 
@@ -165,3 +171,7 @@ void change_frequency_checker(keep_alive_platform_t* self, uint16_t timeout)
 {
     self -> timeout = timeout;
 }
+
+#ifdef __cplusplus
+}
+#endif
