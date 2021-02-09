@@ -62,7 +62,7 @@ uint8_t* checker_data_packed(keep_alive_checker_t* self, int opcode)
 {
     self -> start_of_frame = 0x01;
     self -> op_code = opcode; //ret_opcode(opcode);
-    self -> tx_cnt = self -> tx_cnt;
+    self -> tx_cnt = self -> tx_cnt + 1;
     self -> rx_cnt = self -> rx_cnt;
     self -> end_of_frame = 0x21;
 
@@ -101,21 +101,20 @@ int parse(keep_alive_checker_t* self, const keep_alive_checker_t* fakeself)
                 self -> tx_cnt ==  fakeself -> tx_cnt        && 
                         self -> rx_cnt == fakeself -> rx_cnt &&
                             self -> end_of_frame == fakeself -> end_of_frame)
-    {
+    {		
         printf("\r\n True ");
         return (ret = 1);
     }
 
     return ret;    
 
-/*
-    printf("\r\n fakeself %d", fakeself -> start_of_frame);
-    printf("\r\n fakeself %d", fakeself -> op_code);
-    printf("\r\n fakeself %d", fakeself -> tx_cnt);
-    printf("\r\n fakeself %d", fakeself -> rx_cnt);
-    printf("\r\n fakeself %d", fakeself -> end_of_frame);
-
-*/
+///*
+//    printf("\r\n fakeself %d", fakeself -> start_of_frame);
+//    printf("\r\n fakeself %d", fakeself -> op_code);
+//    printf("\r\n fakeself %d", fakeself -> tx_cnt);
+//    printf("\r\n fakeself %d", fakeself -> rx_cnt);
+//    printf("\r\n fakeself %d", fakeself -> end_of_frame);
+//*/
 }
 
 #ifdef __cplusplus
