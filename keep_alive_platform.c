@@ -55,7 +55,7 @@ void platform_ctr(keep_alive_platform_t* self, uint16_t timeout_ms, tx_cbf tx_cb
     self -> old_rx = 0;
     self -> old_tx = 0;
     self -> response_ticker = 0;
-    self -> response_timeout = 3;
+    self -> response_timeout = 3000;
     self -> bresponse_ticker = false;
     memset(self -> buffer, 0, sizeof(self -> buffer));
 
@@ -78,7 +78,7 @@ int is_timeout_overflow(const keep_alive_platform_t* self)
 void platform_systick(keep_alive_platform_t* self)
 {
     self -> ticker++;
-
+	
     if (self -> bresponse_ticker)
     {       
        if (self -> response_ticker++ > self -> response_timeout)
@@ -117,9 +117,7 @@ void platform_systick(keep_alive_platform_t* self)
 
         self -> ticker = 0;
         
-        self -> bresponse_ticker = true;
-
-        //checker_inc_tx(self -> kac);            
+        self -> bresponse_ticker = true;       
     }    
 }
 
@@ -127,12 +125,16 @@ void add_buf_and_parse(keep_alive_platform_t* self, const uint8_t* buf)
 {
     struct keep_alive_checker_t *cm =  (struct keep_alive_checker_t*)buf;
     
+	self -> bresponse_ticker = false;
+	self -> response_ticker = 0;		
+	
     if (parse (self -> kac, cm))
     {
         printf("\r\n True Frame, Inc Tx");
-        checker_inc_tx(self -> kac);
+		
+		code = KEEP_ALIVE_CHECK;				
     }
-
+	
     //To Do :  move systick func
 
     else
@@ -147,14 +149,19 @@ void add_buf_and_parse(keep_alive_platform_t* self, const uint8_t* buf)
           code = KEEP_ALIVE_LAST_CHECK;
         }
     
-    else 
-    {
-      if (self -> fault_cb != NULL)
-      {
-        self -> fault_cb(self);
-      }
+		else 
+		{
+		  if (self -> fault_cb != NULL)
+		  {
+			self -> fault_cb(self);
+			code = KEEP_ALIVE_CHECK;
+			checker_ctr(self -> kac);
+		    self -> ticker = 0;
+		  }
+		}
     }
-    }    
+
+	checker_inc_rx(self ->  kac);		
 }
 
 uint32_t get_rx(const keep_alive_platform_t* self)
@@ -174,4 +181,5 @@ void change_frequency_checker(keep_alive_platform_t* self, uint16_t timeout)
 
 #ifdef __cplusplus
 }
+
 #endif
